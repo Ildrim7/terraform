@@ -1,0 +1,72 @@
+trigger:
+- none
+
+pool:
+  vmImage: windows-2019
+
+stages:
+- stage: Plan
+  displayName: 'Plan'
+  jobs:
+  - job: 'TerraformJob'
+    displayName: 'Terraform Job'
+    steps:
+
+    - task: JasonBJohnson.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@2
+      displayName: 'Use Terraform latest'
+
+    - task: TerraformTaskV4@4
+      displayName: 'terraform init'
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        backendServiceArm: 'testdemo'
+        backendAzureRmResourceGroupName: 'test-rg'
+        backendAzureRmStorageAccountName: 'demostorage780586'
+        backendAzureRmContainerName: 'terraform'
+        backendAzureRmKey: 'terraform.tfstate'
+
+    - task: TerraformTaskV4@4
+      displayName: 'terraform plan'
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        environmentServiceNameAzureRM: 'testdemo'
+
+    - task: TerraformTaskV4@4
+      displayName: 'terraform apply'
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        commandOptions: '--auto-approve'
+        environmentServiceNameAzureRM: 'testdemo'
+
+stages:
+- stage: Destroy
+  displayName: 'Destroy'
+  jobs:
+  - job: 'TerraformDestroyJob'
+    displayName: 'Terraform Destroy Job'
+    steps:
+
+    - task: JasonBJohnson.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@2
+      displayName: 'Use Terraform latest'
+
+    - task: TerraformTaskV4@4
+      displayName: 'terraform init'
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        backendServiceArm: 'testdemo'
+        backendAzureRmResourceGroupName: 'test-rg'
+        backendAzureRmStorageAccountName: 'demostorage780586'
+        backendAzureRmContainerName: 'terraform'
+        backendAzureRmKey: 'terraform.tfstate'
+
+    - task: TerraformTaskV4@4
+      displayName: 'terraform destroy'
+      inputs:
+        provider: 'azurerm'
+        command: 'destroy'
+        commandOptions: '--auto-approve'
+        environmentServiceNameAzureRM: 'testdemo'
